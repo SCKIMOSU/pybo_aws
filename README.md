@@ -239,6 +239,8 @@ Lightsail은 **EC2와 달리 정액제 요금제**를 제공합니다.
 
 ## AWS Lightsail을 이용한 Django 서비스
 
+- [https://wikidocs.net/75558](https://wikidocs.net/75558)
+  
 AWS에 관심이 있다면 "AWS는 어렵고 비싸다"라는 말을 많이 들었을 것이다. 하지만 AWS 라이트세일(AWS Lightsail)로 AWS를 쉽고 저렴하게 사용할 수 있다. 여기서는 AWS 라이트세일을 어떻게 사용하는지 알아보자.
 
 - [AWS 라이트세일이란?](https://wikidocs.net/75558#aws)
@@ -282,7 +284,6 @@ AWS 라이트세일은 아마존에서 운영하는 웹 서비스에 특화된 �
 
 ## **AWS 가입하기**
 
-- [https://wikidocs.net/75558](https://wikidocs.net/75558)
 
 AWS 라이트세일을 이용하려면 AWS 계정이 필요하다. 먼저 AWS 공식 홈페이지에서 AWS 계정을 생성하자.
 
