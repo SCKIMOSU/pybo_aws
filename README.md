@@ -282,6 +282,8 @@ AWS 라이트세일은 아마존에서 운영하는 웹 서비스에 특화된 �
 
 ## **AWS 가입하기**
 
+- [https://wikidocs.net/75558](https://wikidocs.net/75558)
+
 AWS 라이트세일을 이용하려면 AWS 계정이 필요하다. 먼저 AWS 공식 홈페이지에서 AWS 계정을 생성하자.
 
 ### **AWS 공식 홈페이지 접속**
@@ -443,3 +445,27 @@ AWS 라이트세일 홈페이지에 접속하자.
 ![](https://wikidocs.net/images/page/75558/C_4-04_23.png)
 
 축하한다. 여러분의 서버가 생성되었다.
+
+- AWS Lightsail
+
+![aws1.png](aws1.png)
+
+- AWS Lightsail 에서 제공하는 ssh
+
+![aws3.png](aws3.png)
+
+- AWS Lightsail 에서 제공하는 ssh
+    
+    ![aws4.png](aws4.png)
+    
+- AWS Lightsail 에서 제공하는 ssh
+    
+    ![aws7.png](aws7.png)
+    
+- 파이참에서 lightsail 연결
+    
+    ![aws19.png](aws19.png)
+    
+- 파이참에서 lightsail 연결
+
+![aws20.png](aws20.png)
