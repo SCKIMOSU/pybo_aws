@@ -468,15 +468,102 @@ AWS 라이트세일 홈페이지에 접속하자.
     
 - 파이참에서 Lightsail 연결
 
+![db.png](db.png)
+
 ![aws20.png](aws20.png)
 
 - Lightsail SSH 를 통해 외부 서버 구동
 
-![db.png](db.png)
+![db.png](db%201.png)
 
 - 외부  서버 구동
 
-![db.png](db%201.png)
+![db.png](db%202.png)
+
+- migrations 에러시
+
+![db.png](db%203.png)
+
+- 현재 `pybo/migrations` 디렉토리를 보면 **중복된 마이그레이션 파일들이 존재하며**, 이로 인해 `modify_date` 컬럼이 DB에 두 번 정의되면서 충돌 발생.
+
+### ❗ 확인된 문제
+
+- `0004_answer_modify_date_question_modify_date.py`
+- `0004_auto_20201202_1420.py`
+
+→ 둘 다 `0004`로 시작하므로 **버전 충돌** 가능성 높음.
+
+- 또한 `0005_answer_voter...` 와 `0005_comment.py` → 둘 다 `0005`, 마찬가지로 충돌 가능성.
+
+---
+
+## ✅ 해결 방법: 마이그레이션 정리 및 재생성
+
+---
+
+### 🔁 1. 마이그레이션 파일 정리
+
+```bash
+rm pybo/migrations/000*.py
+
+```
+
+(`__init__.py`는 남겨두어야 함)
+
+---
+
+### 🗑️ 2. DB 파일 삭제 (SQLite일 경우)
+
+```bash
+rm db.sqlite3
+
+```
+
+> 주의: 기존 데이터 모두 삭제.
+> 
+
+---
+
+### 🔄 3. 새 마이그레이션 생성 및 반영
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+
+```
+
+---
+
+### ▶ 4. 서버 실행
+
+```bash
+python manage.py runserver
+
+```
+
+또는 gunicorn이라면:
+
+```bash
+gunicorn --bind 0.0.0.0:8020 mysite.wsgi:application
+
+```
+
+---
+
+## ✅ 정리 요약
+
+| 단계 | 명령 |
+| --- | --- |
+| 마이그레이션 초기화 | `rm pybo/migrations/000*.py` |
+| DB 삭제 | `rm db.sqlite3` |
+| 마이그레이션 다시 생성 | `makemigrations`, `migrate` |
+| 정상 작동 확인 | `runserver` 또는 `gunicorn` |
+
+---
+
+- 수정 후
+
+![db.png](db%204.png)
 
 - 외부  서버 구동
 
@@ -490,14 +577,240 @@ cd mysite
 python manage.py runserver 0:8000
 ```
 
+- pybo 다운로드
+    - 
+    
+    ```jsx
+    git clone https://github.com/SCKIMOSU/pybo_aws.git mysite
+    ```
+    
+
+![db.png](db%205.png)
+
 - 외부  서버 구동
 
-![db.png](db%202.png)
+![db.png](db%206.png)
 
 - 외부  서버 구동
 
-![db.png](db%203.png)
+![db.png](db%207.png)
+
+- 8000 포트 사용 여부
+
+```jsx
+lsof -i :8000
+```
+
+![db.png](db%208.png)
+
+```jsx
+chrome  2125 sckimosu  100u  IPv4 266309      0t0  TCP sckimosu-ThinkPad-X1-Carbon-Gen-8:35264->ec2-3-35-117-254.ap-northeast-2.compute.amazonaws.com:8000 (ESTABLISHED)
+```
+
+이 `lsof` 결과는 다음과 같은 의미를 가지고 있습니다:
+
+```
+chrome  2125 sckimosu  100u  IPv4 266309  0t0  TCP sckimosu-ThinkPad-X1-Carbon-Gen-8:35264->ec2-3-35-117-254.ap-northeast-2.compute.amazonaws.com:8000 (ESTABLISHED)
+
+```
+
+---
+
+## ✅ 항목별 해석
+
+| 항목 | 설명 |
+| --- | --- |
+| `chrome` | 이 연결을 사용 중인 프로세스: Google Chrome 브라우저 |
+| `2125` | Chrome 프로세스의 PID (Process ID) |
+| `sckimosu` | 이 프로세스를 실행한 사용자 |
+| `100u` | 파일 디스크립터 번호 및 접근 방식 (u = read/write) |
+| `IPv4` | 사용 중인 IP 프로토콜 버전 |
+| `266309` | 내부 식별 번호 (file/device ID – 대부분 무시 가능) |
+| `0t0` | 파일 사이즈 및 offset 정보 (network socket이라면 0t0로 표시됨) |
+| `TCP` | 연결 프로토콜 |
+| `sckimosu-ThinkPad-X1-Carbon-Gen-8:35264` | **로컬 호스트명과 포트 번호 (35264)** |
+| `-> ec2-3-35-117-254.ap-northeast-2.compute.amazonaws.com:8000` | **AWS EC2 서버의 8000번 포트로 연결된 상태** |
+| `(ESTABLISHED)` | 현재 연결이 **정상적으로 수립(connected)** 되어 있음 |
+
+---
+
+## ✅ 해석 요약
+
+- 현재 Chrome 브라우저가 AWS EC2 인스턴스 (`3.35.117.254`)의 `8000` 포트에 접속한 상태.
+- EC2에서 Django 서버를 `0.0.0.0:8000`이나 `127.0.0.1:8000`으로 띄우고 있다면, 외부에서 접속이 가능한 상태.
+- `ESTABLISHED` 상태는 TCP 3-way handshake가 완료되어 통신이 **활성화**되어 있음.
+
+---
+
+## 🧩 참고
+
+이 접속 기록이 있다는 것은 다음 두 가지를 의미
+
+1. EC2에서 **Django 또는 Gunicorn 서버가 포트 8000으로 이미 실행 중**
+2. 현재 로컬 Chrome에서 해당 포트로 **정상 접속된 상태**
+
+---
 
 - 외부  서버 구동
+    - gunicorn으로 구동
 
-![db.png](db%204.png)
+![db.png](db%209.png)
+
+![db.png](db%2010.png)
+
+- [http://3.35.117.254:8000/static/bootstrap.min.css](http://3.35.117.254:8000/static/bootstrap.min.css)
+    - 아래 코드가 [static/bootstrap.min.css](http://3.35.117.254:8000/static/bootstrap.min.css) 초반부에 있어야 함
+
+```
+{% load static %}
+<link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
+```
+
+![db.png](db%2011.png)
+
+- **pybo_aws 디렉토리 안에 있는 config 내부의 wsgi 내부의 applicaton**
+
+(venv) (base) sckimosu@sckimosu-ThinkPad-X1-Carbon-Gen-8:~/webserver/class_prep/**pybo_aws**$ **gunicorn** --bind 0:8020 **config**.wsgi:application
+
+```jsx
+(venv) (base) sckimosu@sckimosu-ThinkPad-X1-Carbon-Gen-8:~/webserver/class_prep/pybo_aws$ gunicorn --bind 0:8020 config.wsgi:application
+
+```
+
+![db.png](db%2012.png)
+
+- 정적 페이지 요청은 웹서버 nginx 의 역할
+    - 아직  nginx이 설치 되지 않음
+    - gunicorn 은 동적 페이지  지원함
+
+![db.png](db%2013.png)
+
+## 
+
+![db.png](db%2014.png)
+
+## ✅ "바인딩(binding)"의 의미
+
+> 바인딩(Binding) 이란, 서버 프로그램이 특정 IP 주소와 포트 번호에 자신을 연결(결합)하여, 그 주소로 들어오는 요청을 수신 대기(Listen) 하겠다는 의미
+> 
+- 바인딩이란 ip 주소와 포트를 결합하는 것
+
+---
+
+## 🎯 예시: Django 개발 서버
+
+```bash
+python manage.py runserver 0.0.0.0:8000
+
+```
+
+- 여기서 `0.0.0.0:8000`은 **모든 네트워크 인터페이스의 8000번 포트**에 바인딩하겠다는 뜻.
+- 결과적으로 **외부에서 서버IP:8000 으로 접속 가능**.
+
+---
+
+## ✅ 바인딩 구성 요소
+
+| 구성 요소 | 설명 |
+| --- | --- |
+| IP 주소 | 어떤 네트워크 인터페이스에서 요청을 받을 것인가 |
+| 포트 번호 | 어떤 애플리케이션(서버 프로세스)에게 요청을 전달할 것인가 |
+
+---
+
+## 📌 바인딩 예 비교
+
+| 명령어 | 의미 | 외부 접속 가능 여부 |
+| --- | --- | --- |
+| `127.0.0.1:8000` | 루프백 인터페이스, 자기 자신만 수신 | ❌ 외부에서 불가 |
+| `0.0.0.0:8000` | 모든 인터페이스에서 수신 | ✅ 가능 (보안 설정 필요) |
+| `192.168.0.10:8000` | 특정 로컬 IP에서만 수신 | ⚠️ 외부에서는 해당 IP로만 접근 가능 |
+| `3.35.117.254:8000` | 공인 IP 바인딩 (일반적이지 않음) | ✅ 가능, 단 해당 IP를 서버에 설정한 경우만 |
+
+---
+
+## 🧠 비유로 이해하면?
+
+- **IP 주소** = 집 주소
+- **포트 번호** = 그 집의 문 번호
+- **바인딩** = 내가 3번 문 앞에 앉아서 택배를 받을 준비를 하는 것
+
+---
+
+필요하시면 바인딩과 Listen, Accept의 관계를 포함한 **서버 소켓 동작 구조**도 정리해 드릴 수 있습니다.
+
+## 
+
+---
+
+## ✅ 0.0.0.0의 의미
+
+- `0.0.0.0` : **"모든 IP 주소"** 의미
+    - **IP 네트워크의 규칙과 관례**에 기초
+
+| 표현 | 의미 |
+| --- | --- |
+| `0.0.0.0` (서버 바인딩 시) | **모든 IPv4 네트워크 인터페이스**에서 수신 |
+| `0.0.0.0` (라우팅 등) | **알 수 없는 주소** 또는 **기본 경로 (default route)** |
+| `0.0.0.0` (클라이언트) | **아직 할당되지 않은 IP 주소** 의미 |
+
+---
+
+## 🔍 왜 "모든 IP 주소"를 의미하는가?
+
+### ▶ 1. **특수 예약된 IP (RFC 1122, IETF 표준)**
+
+- `0.0.0.0`은 IPv4에서 **"this host on this network"** 를 의미.
+- 즉, *"내가 가지고 있는 모든 네트워크 인터페이스를 통해 요청을 받겠다."* 라는 뜻.
+
+### ▶ 2. 바인딩 시의 의미: **"어떤 IP로 들어와도 내가 받겠다"**
+
+예를 들어, 서버가 여러 IP를 가진 경우:
+
+- `127.0.0.1` (localhost)
+- `192.168.0.10` (내부망 IP)
+- `3.35.117.254` (공인 IP)
+
+`0.0.0.0:8000`으로 바인딩하면:
+
+→ 위 3개 IP **모두의 8000번 포트**에서 들어오는 요청을 처리.
+
+---
+
+## 📌 실제 예: 서버에서의 바인딩 차이
+
+| 바인딩 주소 | 설명 | 외부 접속 가능 여부 |
+| --- | --- | --- |
+| `127.0.0.1` | 루프백 인터페이스 전용 | ❌ 외부 불가 |
+| `192.168.0.10` | 특정 NIC에만 바인딩 | ⚠️ 제한적 가능 |
+| `0.0.0.0` | 모든 NIC(IP 주소)에 바인딩 | ✅ 외부 허용 가능 |
+
+---
+
+---
+
+## 🔐 보안 경고
+
+- `0.0.0.0`으로 바인딩하면 외부에서도 접근 가능하므로, **방화벽 설정이나 인증이 꼭 필요**.
+- 개발 서버(`python manage.py runserver`)는 이런 상황에서 실서버로 사용하지 말라고 경고
+
+---
+
+### 💡 서버 자신이 `http://3.35.117.254:8000/`로 접속하면?
+
+- 자기 자신의 공인 IP를 통해 접속하는 것이므로, 내부에서도 외부처럼 통신합니다.
+- EC2는 이 주소로도 자신을 접속할 수 있습니다 (단, 네트워크 설정이나 방화벽이 이를 막지 않는다면).
+
+## ✅ 두 가지 접속 방식 비교
+
+| 접속 주소 | 의미 | 대상 |
+| --- | --- | --- |
+| `http://127.0.0.1:8000/` 또는 `http://localhost:8000/` | 루프백(Loopback) 주소 | **오직 자신(ECS 내부)** 에서만 접속 가능 |
+| `http://3.35.117.254:8000/` | 공인 IP 주소 | **자신 포함, 외부 누구나** 접속 가능 (보안 그룹 열려 있을 경우 |
+
+## 🔐 보안 주의
+
+- 공인 IP로 외부 접근을 허용할 때는 **포트 제한**과 **보안 그룹 설정**을 꼭 고려
+- 특히 `runserver`는 프로덕션용이 아니므로, 외부 접속 시 Gunicorn + Nginx 조합을 권장.
+
+---
