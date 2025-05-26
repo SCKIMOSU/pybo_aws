@@ -814,3 +814,77 @@ python manage.py runserver 0.0.0.0:8000
 - 특히 `runserver`는 프로덕션용이 아니므로, 외부 접속 시 Gunicorn + Nginx 조합을 권장.
 
 ---
+
+## AWS(Amazon Web Services)는 다양한 클라우드 관련 자격증
+
+- 자격증은 **기술 수준(기초, 준전문가, 전문가)**과 **분야(솔루션 아키텍처, 데이터, 보안 등)**에 따라 나뉘며, 총 12개의 공식 자격증
+
+---
+
+## ✅ AWS 자격증 전체 목록 (2025년 기준)
+
+| 수준 | 자격증 이름 | 설명 |
+| --- | --- | --- |
+| 🟢 기초 (Foundational) | **AWS Certified Cloud Practitioner (CLF-C02)** | AWS 기초 개념, 비용, 보안, 아키텍처 등 전반적인 이해 필요 (비기술자도 응시 가능) |
+| 🔵 준전문가 (Associate) | **AWS Certified Solutions Architect - Associate (SAA-C03)** | 시스템 설계 및 구축 능력 평가. 가장 인기 있는 자격증 |
+|  | **AWS Certified Developer - Associate (DVA-C02)** | 클라우드 기반 애플리케이션 개발 및 디버깅 능력 |
+|  | **AWS Certified SysOps Administrator - Associate (SOA-C02)** | 운영, 배포, 자동화 중심의 시스템 관리 능력 평가 |
+| 🔴 전문가 (Professional) | **AWS Certified Solutions Architect - Professional (SAP-C02)** | 복잡한 시스템 아키텍처 설계 능력, 높은 난이도 |
+|  | **AWS Certified DevOps Engineer - Professional (DOP-C02)** | CI/CD, 자동화, 운영 및 모니터링 중심의 DevOps 역량 요구 |
+
+---
+
+## ✅ 스페셜티 (Specialty - 전문 분야 자격증)
+
+| 분야 | 자격증 이름 | 설명 |
+| --- | --- | --- |
+| 보안 | AWS Certified Security – Specialty | 보안 아키텍처, 데이터 보호, IAM 등 |
+| 네트워킹 | AWS Certified Advanced Networking – Specialty | 하이브리드/대규모 네트워크 설계 |
+| 데이터 | AWS Certified Data Analytics – Specialty | 데이터 파이프라인, 분석, 시각화 |
+| 머신러닝 | AWS Certified Machine Learning – Specialty | AI/ML 모델 구축 및 배포 |
+| 데이터베이스 | AWS Certified Database – Specialty | 관계형/비관계형 DB 설계 및 관리 |
+| SAP | AWS Certified SAP on AWS – Specialty | SAP 워크로드의 AWS 이전 및 관리 |
+
+---
+
+## 🎯 추천 자격증 경로 (학습 순서)
+
+### 1. 초보자 → 엔지니어 경로
+
+1. **Cloud Practitioner**
+2. **Solutions Architect - Associate**
+3. **Solutions Architect - Professional**
+
+### 2. 개발자 경로
+
+1. **Cloud Practitioner**
+2. **Developer - Associate**
+3. **DevOps Engineer - Professional**
+
+### 3. 데이터/AI 경로
+
+1. **Cloud Practitioner**
+2. **Data Analytics - Specialty** 또는 **Machine Learning - Specialty**
+
+---
+
+## 📚 공부 자료 추천
+
+- **AWS 공식 사이트**: [https://aws.amazon.com/certification/](https://aws.amazon.com/certification/)
+- **Udemy 강의** (한글 자막 지원):
+    - "AWS Certified Solutions Architect – Associate 2024"
+    - "AWS Certified Cloud Practitioner – 2024"
+- **freeCodeCamp YouTube 강의**: 무료, 영어
+- **AWS Skill Builder** (공식 무료 강의 플랫폼)
+
+---
+
+## ⏱️ 시험 정보 (Cloud Practitioner 기준)
+
+- **형식**: 65문항 (선다형 + 복수선택)
+- **시험 시간**: 90분
+- **시험 비용**: $100 (Associate는 $150, Professional/Specialty는 $300)
+- **응시 방법**: 온라인 또는 피어슨뷰 센터
+- **언어 지원**: 영어, 한국어 포함
+
+---
